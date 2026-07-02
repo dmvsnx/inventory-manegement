@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/dmvsnx/inventory-manegement/internal/config"
+	"github.com/dmvsnx/inventory-manegement/internal/model"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -26,6 +27,13 @@ func NewDB(cfg *config.Config) (*gorm.DB, error) {
 		return nil, err
 	}
 	log.Println("Database connected successfully")
+
+	if err := db.AutoMigrate(
+		&model.Product{},
+		&model.Stock{},
+	); err != nil {
+		return nil, err
+	}
 
 	DB = db
 	return db, nil

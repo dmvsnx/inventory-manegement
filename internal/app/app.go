@@ -11,28 +11,31 @@ import (
 
 	"github.com/dmvsnx/inventory-manegement/internal/config"
 	"github.com/dmvsnx/inventory-manegement/internal/database"
+	"github.com/dmvsnx/inventory-manegement/internal/delivery/routes"
 	"github.com/gofiber/fiber/v2"
 )
 
 type Server struct {
 	app fiber.App
-	cfg *config.Config
+	config *config.Config
 }
 
 func NewServer(cfg *config.Config) *Server {
 	return &Server{
 		app: *fiber.New(),
-		cfg: cfg,
+		config: cfg,
 	}
 }
 
 func (s *Server) Start() error {
-	_, err := database.NewDB(s.cfg)
+	db, err := database.NewDB(s.config)
 	if err != nil {
 		return fmt.Errorf("init database: %w", err)
 	}
 
-	addr := fmt.Sprintf(":%s", s.cfg.AppPort)
+	routes.RegisterRoutes(&s.app, db)
+
+	addr := fmt.Sprintf(":%s", s.config.AppPort)
 	go func() {
 		log.Printf("Server running on %s", addr)
 		if err := s.app.Listen(addr); err != nil {
